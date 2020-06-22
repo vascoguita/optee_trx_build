@@ -19,6 +19,9 @@ OPTEE_TEST_OUT_PATH		?= $(ROOT)/optee_test/out
 OPTEE_EXAMPLES_PATH		?= $(ROOT)/optee_examples
 OPTEE_BENCHMARK_PATH		?= $(ROOT)/optee_benchmark
 BUILDROOT_TARGET_ROOT		?= $(ROOT)/out-br/target
+OPTEE_GMP_PATH			?= $(ROOT)/optee_gmp
+OPTEE_PBC_PATH			?= $(ROOT)/optee_pbc
+OPTEE_IBME_PATH			?= $(ROOT)/optee_ibme
 
 # default high verbosity. slow uarts shall specify lower if prefered
 CFG_TEE_CORE_LOG_LEVEL		?= 3
@@ -32,7 +35,7 @@ CCACHE ?= $(shell which ccache) # Don't remove this comment (space is needed)
 # # Set QEMU_VIRTFS_ENABLE to 'y' and adjust QEMU_VIRTFS_HOST_DIR
 # # Then in QEMU, run:
 # # $ mount -t 9p -o trans=virtio host <mount_point>
-QEMU_VIRTFS_ENABLE		?= n
+QEMU_VIRTFS_ENABLE		?= y
 QEMU_VIRTFS_HOST_DIR	?= $(ROOT)
 
 ################################################################################
@@ -52,8 +55,8 @@ ifneq ($(COMPILE_NS_USER),)
 ifeq ($(COMPILE_NS_KERNEL),)
 $(error COMPILE_NS_KERNEL must be defined as COMPILE_NS_USER=$(COMPILE_NS_USER) is defined)
 endif
-ifeq (,$(filter $(COMPILE_NS_USER),32 64))
-$(error COMPILE_NS_USER=$(COMPILE_NS_USER) - Should be 32 or 64)
+ifeq (,$(filter $(COMPILE_NS_USER), 64))
+$(error COMPILE_NS_USER=$(COMPILE_NS_USER) - Should be 64)
 endif
 endif
 
@@ -76,8 +79,8 @@ ifneq ($(COMPILE_S_USER),)
 ifeq ($(COMPILE_S_KERNEL),)
 $(error COMPILE_S_KERNEL must be defined as COMPILE_S_USER=$(COMPILE_S_USER) is defined)
 endif
-ifeq (,$(filter $(COMPILE_S_USER),32 64))
-$(error COMPILE_S_USER=$(COMPILE_S_USER) - Should be 32 or 64)
+ifeq (,$(filter $(COMPILE_S_USER), 64))
+$(error COMPILE_S_USER=$(COMPILE_S_USER) - Should be 64)
 endif
 endif
 
@@ -90,8 +93,8 @@ OPTEE_OS_PAGEABLE_V2_BIN    ?= $(OPTEE_OS_PATH)/out/arm/core/tee-pageable_v2.bin
 ifeq ($(COMPILE_S_USER),)
 $(error COMPILE_S_USER must be defined as COMPILE_S_KERNEL=$(COMPILE_S_KERNEL) is defined)
 endif
-ifeq (,$(filter $(COMPILE_S_KERNEL),32 64))
-$(error COMPILE_S_KERNEL=$(COMPILE_S_KERNEL) - Should be 32 or 64)
+ifeq (,$(filter $(COMPILE_S_KERNEL), 64))
+$(error COMPILE_S_KERNEL=$(COMPILE_S_KERNEL) - Should 64)
 endif
 endif
 
@@ -453,3 +456,43 @@ benchmark-app-common: optee-os optee-client
 .PHONY: benchmark-app-clean-common
 benchmark-app-clean-common:
 	$(MAKE) -C $(OPTEE_BENCHMARK_PATH) clean
+
+################################################################################
+# trx
+################################################################################
+
+TSX_COMMON_FLAGS ?= \
+	CROSS_COMPILE=$(AARCH64_CROSS_COMPILE) \
+	PLATFORM=$(OPTEE_OS_PLATFORM) \
+	TA_DEV_KIT_DIR=$(OPTEE_OS_TA_DEV_KIT_DIR) \
+	TEEC_EXPORT=$(OPTEE_CLIENT_EXPORT)
+
+.PHONY: ibme
+ibme: pbc
+	$(MAKE) -C $(OPTEE_IBME_PATH) $(TSX_COMMON_FLAGS) && \
+	$(MAKE) -C $(OPTEE_IBME_PATH) install $(TSX_COMMON_FLAGS)
+
+.PHONY: pbc
+pbc: gmp
+	$(MAKE) -C $(OPTEE_PBC_PATH) $(TSX_COMMON_FLAGS) && \
+	$(MAKE) -C $(OPTEE_PBC_PATH) install $(TSX_COMMON_FLAGS)
+
+.PHONY: gmp
+gmp: optee-os
+	$(MAKE) -C $(OPTEE_GMP_PATH) $(TSX_COMMON_FLAGS) --no-builtin-variables && \
+	$(MAKE) -C $(OPTEE_GMP_PATH) install
+
+.PHONY: ibme_clean
+ibme_clean:
+	$(MAKE) -C $(OPTEE_IBME_PATH) uninstall $(TSX_COMMON_FLAGS); \
+	$(MAKE) -C $(OPTEE_IBME_PATH) clean $(TSX_COMMON_FLAGS)
+
+.PHONY: pbc_clean
+pbc_clean:
+	$(MAKE) -C $(OPTEE_PBC_PATH) uninstall $(TSX_COMMON_FLAGS); \
+	$(MAKE) -C $(OPTEE_PBC_PATH) clean $(TSX_COMMON_FLAGS)
+
+.PHONY: gmp_clean
+gmp_clean:
+	$(MAKE) -C $(OPTEE_GMP_PATH) uninstall; \
+	$(MAKE) -C $(OPTEE_GMP_PATH) clean
