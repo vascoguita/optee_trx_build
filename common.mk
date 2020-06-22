@@ -465,7 +465,11 @@ TSX_COMMON_FLAGS ?= \
 	CROSS_COMPILE=$(AARCH64_CROSS_COMPILE) \
 	PLATFORM=$(OPTEE_OS_PLATFORM) \
 	TA_DEV_KIT_DIR=$(OPTEE_OS_TA_DEV_KIT_DIR) \
-	TEEC_EXPORT=$(OPTEE_CLIENT_EXPORT)
+	TEEC_EXPORT=$(OPTEE_CLIENT_EXPORT)/usr
+
+.PHONY: ibme_demo
+ibme_demo: ibme
+	$(MAKE) -C $(OPTEE_IBME_PATH) demo $(TSX_COMMON_FLAGS)
 
 .PHONY: ibme
 ibme: pbc
@@ -481,6 +485,10 @@ pbc: gmp
 gmp: optee-os
 	$(MAKE) -C $(OPTEE_GMP_PATH) $(TSX_COMMON_FLAGS) --no-builtin-variables && \
 	$(MAKE) -C $(OPTEE_GMP_PATH) install
+
+.PHONY: ibme_demo_clean
+ibme_demo_clean:
+	$(MAKE) -C $(OPTEE_IBME_PATH)  demo_clean $(TSX_COMMON_FLAGS);
 
 .PHONY: ibme_clean
 ibme_clean:
