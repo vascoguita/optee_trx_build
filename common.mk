@@ -22,6 +22,7 @@ BUILDROOT_TARGET_ROOT		?= $(ROOT)/out-br/target
 OPTEE_GMP_PATH			?= $(ROOT)/optee_gmp
 OPTEE_PBC_PATH			?= $(ROOT)/optee_pbc
 OPTEE_IBME_PATH			?= $(ROOT)/optee_ibme
+TRX_PATH				?= $(ROOT)/trx
 
 # default high verbosity. slow uarts shall specify lower if prefered
 CFG_TEE_CORE_LOG_LEVEL		?= 3
@@ -467,6 +468,14 @@ TSX_COMMON_FLAGS ?= \
 	TA_DEV_KIT_DIR=$(OPTEE_OS_TA_DEV_KIT_DIR) \
 	TEEC_EXPORT=$(OPTEE_CLIENT_EXPORT)/usr
 
+.PHONY: trx_demo
+trx_demo: trx
+	$(MAKE) -C $(TRX_PATH) demo $(TSX_COMMON_FLAGS)
+
+trx:
+	$(MAKE) -C $(TRX_PATH) $(TSX_COMMON_FLAGS) && \
+	$(MAKE) -C $(TRX_PATH) install $(TSX_COMMON_FLAGS)
+
 .PHONY: ibme_demo
 ibme_demo: ibme
 	$(MAKE) -C $(OPTEE_IBME_PATH) demo $(TSX_COMMON_FLAGS)
@@ -486,9 +495,17 @@ gmp: optee-os
 	$(MAKE) -C $(OPTEE_GMP_PATH) $(TSX_COMMON_FLAGS) --no-builtin-variables && \
 	$(MAKE) -C $(OPTEE_GMP_PATH) install
 
+.PHONY: trx_demo_clean
+trx_demo_clean:
+	$(MAKE) -C $(TRX_PATH) demo_clean $(TSX_COMMON_FLAGS);
+
+.PHONY: trx_clean
+trx_clean:
+	$(MAKE) -C $(TRX_PATH) clean $(TSX_COMMON_FLAGS);
+
 .PHONY: ibme_demo_clean
 ibme_demo_clean:
-	$(MAKE) -C $(OPTEE_IBME_PATH)  demo_clean $(TSX_COMMON_FLAGS);
+	$(MAKE) -C $(OPTEE_IBME_PATH) demo_clean $(TSX_COMMON_FLAGS);
 
 .PHONY: ibme_clean
 ibme_clean:
