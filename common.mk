@@ -469,16 +469,17 @@ TRX_COMMON_FLAGS ?= \
 	TA_DEV_KIT_DIR=$(OPTEE_OS_TA_DEV_KIT_DIR) \
 	TEEC_EXPORT=$(OPTEE_CLIENT_EXPORT)/usr
 
+
+.PHONY: trx_setup
+trx_setup: trx_demo
+	$(MAKE) -C $(TRX_PATH) setup $(TRX_COMMON_FLAGS)
+
 .PHONY: trx_demo
 trx_demo: trx tui
 	$(MAKE) -C $(TRX_PATH) demo $(TRX_COMMON_FLAGS)
 
-.PHONY: trx_setup
-trx_setup: trx tui
-	$(MAKE) -C $(TRX_PATH) setup $(TRX_COMMON_FLAGS)
-
 .PHONY: trx
-trx: tui
+trx: tui ibme
 	$(MAKE) -C $(TRX_PATH) $(TRX_COMMON_FLAGS) && \
 	$(MAKE) -C $(TRX_PATH) install $(TRX_COMMON_FLAGS)
 
