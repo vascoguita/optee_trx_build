@@ -22,6 +22,7 @@ BUILDROOT_TARGET_ROOT		?= $(ROOT)/out-br/target
 OPTEE_GMP_PATH			?= $(ROOT)/optee_gmp
 OPTEE_PBC_PATH			?= $(ROOT)/optee_pbc
 OPTEE_IBME_PATH			?= $(ROOT)/optee_ibme
+OPTEE_TUI_PATH			?= $(ROOT)/optee_tui
 TRX_PATH				?= $(ROOT)/trx
 
 # default high verbosity. slow uarts shall specify lower if prefered
@@ -462,60 +463,80 @@ benchmark-app-clean-common:
 # trx
 ################################################################################
 
-TSX_COMMON_FLAGS ?= \
+TRX_COMMON_FLAGS ?= \
 	CROSS_COMPILE=$(AARCH64_CROSS_COMPILE) \
 	PLATFORM=$(OPTEE_OS_PLATFORM) \
 	TA_DEV_KIT_DIR=$(OPTEE_OS_TA_DEV_KIT_DIR) \
 	TEEC_EXPORT=$(OPTEE_CLIENT_EXPORT)/usr
 
 .PHONY: trx_demo
-trx_demo: trx
-	$(MAKE) -C $(TRX_PATH) demo $(TSX_COMMON_FLAGS)
+trx_demo: trx tui
+	$(MAKE) -C $(TRX_PATH) demo $(TRX_COMMON_FLAGS)
 
-trx:
-	$(MAKE) -C $(TRX_PATH) $(TSX_COMMON_FLAGS) && \
-	$(MAKE) -C $(TRX_PATH) install $(TSX_COMMON_FLAGS)
+.PHONY: trx_setup
+trx_setup: trx tui
+	$(MAKE) -C $(TRX_PATH) setup $(TRX_COMMON_FLAGS)
+
+.PHONY: trx
+trx: tui
+	$(MAKE) -C $(TRX_PATH) $(TRX_COMMON_FLAGS) && \
+	$(MAKE) -C $(TRX_PATH) install $(TRX_COMMON_FLAGS)
+
+.PHONY: tui
+tui:
+	$(MAKE) -C $(OPTEE_TUI_PATH) $(TRX_COMMON_FLAGS) && \
+	$(MAKE) -C $(OPTEE_TUI_PATH) install $(TRX_COMMON_FLAGS)
 
 .PHONY: ibme_demo
 ibme_demo: ibme
-	$(MAKE) -C $(OPTEE_IBME_PATH) demo $(TSX_COMMON_FLAGS)
+	$(MAKE) -C $(OPTEE_IBME_PATH) demo $(TRX_COMMON_FLAGS)
 
 .PHONY: ibme
 ibme: pbc
-	$(MAKE) -C $(OPTEE_IBME_PATH) $(TSX_COMMON_FLAGS) && \
-	$(MAKE) -C $(OPTEE_IBME_PATH) install $(TSX_COMMON_FLAGS)
+	$(MAKE) -C $(OPTEE_IBME_PATH) $(TRX_COMMON_FLAGS) && \
+	$(MAKE) -C $(OPTEE_IBME_PATH) install $(TRX_COMMON_FLAGS)
 
 .PHONY: pbc
 pbc: gmp
-	$(MAKE) -C $(OPTEE_PBC_PATH) $(TSX_COMMON_FLAGS) && \
-	$(MAKE) -C $(OPTEE_PBC_PATH) install $(TSX_COMMON_FLAGS)
+	$(MAKE) -C $(OPTEE_PBC_PATH) $(TRX_COMMON_FLAGS) && \
+	$(MAKE) -C $(OPTEE_PBC_PATH) install $(TRX_COMMON_FLAGS)
 
 .PHONY: gmp
 gmp: optee-os
-	$(MAKE) -C $(OPTEE_GMP_PATH) $(TSX_COMMON_FLAGS) --no-builtin-variables && \
+	$(MAKE) -C $(OPTEE_GMP_PATH) $(TRX_COMMON_FLAGS) --no-builtin-variables && \
 	$(MAKE) -C $(OPTEE_GMP_PATH) install
+
+.PHONY: trx_setup_clean
+trx_setup_clean:
+	$(MAKE) -C $(TRX_PATH) setup_clean $(TRX_COMMON_FLAGS);
 
 .PHONY: trx_demo_clean
 trx_demo_clean:
-	$(MAKE) -C $(TRX_PATH) demo_clean $(TSX_COMMON_FLAGS);
+	$(MAKE) -C $(TRX_PATH) demo_clean $(TRX_COMMON_FLAGS);
 
 .PHONY: trx_clean
 trx_clean:
-	$(MAKE) -C $(TRX_PATH) clean $(TSX_COMMON_FLAGS);
+	$(MAKE) -C $(TRX_PATH) uninstall $(TRX_COMMON_FLAGS); \
+	$(MAKE) -C $(TRX_PATH) clean $(TRX_COMMON_FLAGS);
+
+.PHONY: trx_clean
+tui_clean:
+	$(MAKE) -C $(OPTEE_TUI_PATH) uninstall $(TRX_COMMON_FLAGS); \
+	$(MAKE) -C $(OPTEE_TUI_PATH) clean $(TRX_COMMON_FLAGS);
 
 .PHONY: ibme_demo_clean
 ibme_demo_clean:
-	$(MAKE) -C $(OPTEE_IBME_PATH) demo_clean $(TSX_COMMON_FLAGS);
+	$(MAKE) -C $(OPTEE_IBME_PATH) demo_clean $(TRX_COMMON_FLAGS);
 
 .PHONY: ibme_clean
 ibme_clean:
-	$(MAKE) -C $(OPTEE_IBME_PATH) uninstall $(TSX_COMMON_FLAGS); \
-	$(MAKE) -C $(OPTEE_IBME_PATH) clean $(TSX_COMMON_FLAGS)
+	$(MAKE) -C $(OPTEE_IBME_PATH) uninstall $(TRX_COMMON_FLAGS); \
+	$(MAKE) -C $(OPTEE_IBME_PATH) clean $(TRX_COMMON_FLAGS)
 
 .PHONY: pbc_clean
 pbc_clean:
-	$(MAKE) -C $(OPTEE_PBC_PATH) uninstall $(TSX_COMMON_FLAGS); \
-	$(MAKE) -C $(OPTEE_PBC_PATH) clean $(TSX_COMMON_FLAGS)
+	$(MAKE) -C $(OPTEE_PBC_PATH) uninstall $(TRX_COMMON_FLAGS); \
+	$(MAKE) -C $(OPTEE_PBC_PATH) clean $(TRX_COMMON_FLAGS)
 
 .PHONY: gmp_clean
 gmp_clean:
