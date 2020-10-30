@@ -483,6 +483,10 @@ trx: tui ibme
 	$(MAKE) -C $(TRX_PATH) $(TRX_COMMON_FLAGS) && \
 	$(MAKE) -C $(TRX_PATH) install $(TRX_COMMON_FLAGS)
 
+.PHONY: tui_setup
+tui_setup: tui
+	$(MAKE) -C $(OPTEE_TUI_PATH) setup $(TRX_COMMON_FLAGS)
+
 .PHONY: tui
 tui:
 	$(MAKE) -C $(OPTEE_TUI_PATH) $(TRX_COMMON_FLAGS) && \
@@ -519,6 +523,10 @@ trx_demo_clean:
 trx_clean:
 	$(MAKE) -C $(TRX_PATH) uninstall $(TRX_COMMON_FLAGS); \
 	$(MAKE) -C $(TRX_PATH) clean $(TRX_COMMON_FLAGS);
+
+.PHONY: tui_setup_clean
+tui_setup_clean:
+	$(MAKE) -C $(OPTEE_TUI_PATH) setup_clean;
 
 .PHONY: trx_clean
 tui_clean:
