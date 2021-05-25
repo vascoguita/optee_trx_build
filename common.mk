@@ -24,6 +24,7 @@ OPTEE_PBC_PATH			?= $(ROOT)/optee_pbc
 OPTEE_IBME_PATH			?= $(ROOT)/optee_ibme
 OPTEE_TUI_PATH			?= $(ROOT)/optee_tui
 TRX_PATH				?= $(ROOT)/trx
+TRX_BENCHMARK_PATH		?= $(ROOT)/trx_benchmark
 
 # default high verbosity. slow uarts shall specify lower if prefered
 CFG_TEE_CORE_LOG_LEVEL		?= 3
@@ -469,6 +470,9 @@ TRX_COMMON_FLAGS ?= \
 	TA_DEV_KIT_DIR=$(OPTEE_OS_TA_DEV_KIT_DIR) \
 	TEEC_EXPORT=$(OPTEE_CLIENT_EXPORT)/usr
 
+.PHONY: trx_benchmark
+trx_benchmark: trx_setup
+	$(MAKE) -C $(TRX_BENCHMARK_PATH) $(TRX_COMMON_FLAGS)
 
 .PHONY: trx_setup
 trx_setup: trx_demo
@@ -510,6 +514,10 @@ pbc: gmp
 gmp: optee-os
 	$(MAKE) -C $(OPTEE_GMP_PATH) $(TRX_COMMON_FLAGS) --no-builtin-variables && \
 	$(MAKE) -C $(OPTEE_GMP_PATH) install
+
+.PHONY: trx_benchmark_clean
+trx_benchmark_clean:
+	$(MAKE) -C $(TRX_BENCHMARK_PATH) clean $(TRX_COMMON_FLAGS);
 
 .PHONY: trx_setup_clean
 trx_setup_clean:
