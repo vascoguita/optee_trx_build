@@ -496,6 +496,10 @@ tui:
 	$(MAKE) -C $(OPTEE_TUI_PATH) $(TRX_COMMON_FLAGS) && \
 	$(MAKE) -C $(OPTEE_TUI_PATH) install $(TRX_COMMON_FLAGS)
 
+.PHONY: ibme_benchmark
+ibme_benchmark: ibme
+	$(MAKE) -C $(OPTEE_IBME_PATH) benchmark $(TRX_COMMON_FLAGS)
+
 .PHONY: ibme_demo
 ibme_demo: ibme
 	$(MAKE) -C $(OPTEE_IBME_PATH) demo $(TRX_COMMON_FLAGS)
@@ -540,6 +544,10 @@ tui_setup_clean:
 tui_clean:
 	$(MAKE) -C $(OPTEE_TUI_PATH) uninstall $(TRX_COMMON_FLAGS); \
 	$(MAKE) -C $(OPTEE_TUI_PATH) clean $(TRX_COMMON_FLAGS);
+
+.PHONY: ibme_benchmark_clean
+ibme_benchmark_clean:
+	$(MAKE) -C $(OPTEE_IBME_PATH) benchmark_clean $(TRX_COMMON_FLAGS);
 
 .PHONY: ibme_demo_clean
 ibme_demo_clean:
